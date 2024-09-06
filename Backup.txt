@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="icones/lista-de-compras.ico" type="image/x-icon">
+    <title>Lista de Tarefas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        /* Estilos gerais */
+        * {
+            font-family: Helvetica;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-image: url("fundo (6).jpg");
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 85%;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: rgba(150, 150, 150, 0.5); /* #969696 com 50% de opacidade */
+            border-radius: 20px;
+            box-shadow: 0 0 0px rgba(150, 150, 150, 0.5);
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 3vw;
+            margin-bottom: 0;
+            font-style: oblique;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0.7vw;
+        }
+
+        li {
+            font-size: 70%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            padding: 0.3vw;
+            margin-top: 0.3vw;
+            background-color: rgba(216, 19, 19, 0.7);
+        }
+
+        li.completed {
+            text-decoration: line-through;
+            font-style: italic;
+            background-color: #969696;
+        }
+
+        label {
+            margin-right: 2vw;
+            white-space: pre-line;
+            font-size: 150%;
+            color: #ffffff;
+        }
+
+        #taskInput {
+            font-style: italic;
+            font-size: 80%;
+            width: 100%;
+            padding: 1vw;
+            margin-top: 1vw;
+        }
+
+        button {
+            font-style: italic;
+            padding: 0.3vw;
+            margin-top: 0.2vw;
+            border-radius: 10px;
+            border: 0.5px solid #fff;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .editTaskBtn {
+            font-size: 0.9vw; /* Deixando o botão "Editar" menor */
+            padding: 0.1vw 0.3vw;
+            width: 5%;
+        }
+
+        .export-button,
+        .deletar,
+        .custom-file-upload {
+            display: inline-block;
+            margin-top: 0.2vw;
+        }
+
+        /* Estilização para anexar imagens */
+        .custom-file-upload {
+            cursor: pointer;
+            color: #000;
+            background-color: #fff;
+            padding: 0.3vw;
+            margin-top: 0.2vw;
+            border-radius: 10px;
+            border: 0.5px solid #fff;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .image-container {
+            display: flex;
+            gap: 5px;
+        }
+
+        .task img {
+            max-width: 50px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        @media only screen and (max-width: 600px) {
+            h1 {
+                font-size: 6vw;
+            }
+
+            button {
+                padding: 1vw;
+            }
+
+            .editTaskBtn {
+                font-size: 2.5vw; /* Botão Editar ajustado para dispositivos menores */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Tarefas</h1>        
+
+        <input type="file" id="imageInput" multiple accept="image/*">
+
+        <div>
+            <label for="taskInput">Descrição da Tarefa:</label>
+            <input type="text" id="taskInput" placeholder="Adicionar tarefa">
+            <button id="addTaskBtn" onclick="addTask()">Adicionar</button>
+            <button id="attachFileBtn" class="custom-file-upload" onclick="document.getElementById('imageInput').click()">Anexar imagem</button>
+            <button class="export-button" onclick="exportTasks()">Exportar Lista</button>
+            <button class="deletar" onclick="deleteCompletedTasks()">Deletar Tarefas Completas</button>
+        </div>
+
+        <ul id="taskList"></ul>
+        
+    </div>
+
+    <script>
+        // Função para adicionar tarefa
+        function addTask() {
+            var taskInput = document.getElementById("taskInput");
+            var taskList = document.getElementById("taskList");
+
+            if (taskInput.value.trim() !== "") {
+                var taskItem = document.createElement("li");
+                var date = getCurrentDateTime();
+
+                var taskContent = `
+                    <label><input type="checkbox" onchange="completeTask(this)"> ${taskInput.value} - Criada em: ${date}</label>
+                    <button class="editTaskBtn" onclick="editTask(this)">Editar</button>
+                    <button class="saveTaskBtn" style="display: none;" onclick="saveTask(this)">Salvar</button>
+                `;
+
+                // Adiciona miniaturas das imagens selecionadas
+                var imageInput = document.getElementById("imageInput");
+                if (imageInput.files.length > 0) {
+                    taskContent += '<div class="image-container">';
+                    for (var i = 0; i < imageInput.files.length; i++) {
+                        var imageURL = URL.createObjectURL(imageInput.files[i]);
+                        taskContent += `<img src="${imageURL}" alt="Anexo ${i + 1}" onclick="openFullscreen(this)">`;
+                    }
+                    taskContent += '</div>';
+                }
+
+                taskItem.innerHTML = taskContent;
+                taskItem.classList.add("task");
+
+                taskList.insertBefore(taskItem, taskList.firstChild);
+                taskInput.value = "";
+                imageInput.value = "";
+
+                // Salvar tarefas após adicionar uma nova
+                saveTasks();
+                attachTaskListeners();
+            }
+        }
+
+        // Função para habilitar a edição de uma tarefa
+        function editTask(button) {
+            var taskItem = button.closest("li");
+            var label = taskItem.querySelector("label");
+            var taskText = label.textContent.trim().split(" - ")[0]; // Pega o texto da tarefa
+
+            label.innerHTML = `<input type="text" value="${taskText}" class="editInput" style="width: 100%;">`; // Substitui pelo campo de texto
+            button.style.display = "none"; // Oculta botão de editar
+            var saveButton = taskItem.querySelector(".saveTaskBtn");
+            saveButton.style.display = "inline-block"; // Mostra botão de salvar
+        }
+
+        // Função para salvar a edição da tarefa
+        function saveTask(button) {
+            var taskItem = button.closest("li");
+            var input = taskItem.querySelector(".editInput");
+            var taskText = input.value.trim();
+            var date = getCurrentDateTime(); // Atualiza a data da tarefa
+
+            var label = taskItem.querySelector("label");
+            label.innerHTML = `<input type="checkbox" onchange="completeTask(this)"> ${taskText} - Editada em: ${date}`;
+            
+            button.style.display = "none"; // Oculta botão de salvar
+            var editButton = taskItem.querySelector(".editTaskBtn");
+            editButton.style.display = "inline-block"; // Mostra botão de editar
+            attachTaskListeners();
+            saveTasks(); // Salvar tarefas após editar
+        }
+
+        // Função para marcar uma tarefa como completa e movê-la para o final da lista
+        function completeTask(checkbox) {
+            var taskItem = checkbox.closest("li");
+            var taskList = document.getElementById("taskList");
+
+            if (checkbox.checked) {
+                taskItem.classList.add("completed");
+
+                // Remove o item da lista e o adiciona ao final
+                taskList.removeChild(taskItem);
+                taskList.appendChild(taskItem);
+            } else {
+                taskItem.classList.remove("completed");
+
+                // Se desejar que uma tarefa incompleta volte para o topo, descomente as duas linhas abaixo
+                taskList.removeChild(taskItem);
+                taskList.insertBefore(taskItem, taskList.firstChild);
+            }
+
+    saveTasks(); // Salva o estado da tarefa (completa/incompleta) e a ordem
+}
+
+        // Função para exportar a lista de tarefas para um arquivo .txt
+        function exportTasks() {
+            var taskList = document.getElementById("taskList");
+            var tasks = taskList.getElementsByTagName("li");
+
+            var taskArray = [];
+            for (var i = 0; i < tasks.length; i++) {
+                var label = tasks[i].querySelector("label").innerText;
+                taskArray.push(label);
+            }
+
+            var taskBlob = new Blob([taskArray.join("\n")], { type: "text/plain;charset=utf-8" });
+            saveAs(taskBlob, "lista_de_tarefas.txt");
+        }
+
+        // Função para deletar tarefas completas
+        function deleteCompletedTasks() {
+            var taskList = document.getElementById("taskList");
+            var tasks = taskList.getElementsByTagName("li");
+
+            for (var i = tasks.length - 1; i >= 0; i--) {
+                if (tasks[i].classList.contains("completed")) {
+                    taskList.removeChild(tasks[i]);
+                }
+            }
+            saveTasks(); // Salvar tarefas após deletar
+        }
+
+        // Função para abrir a imagem em tela cheia
+        function openFullscreen(img) {
+            var fullscreenDiv = document.createElement("div");
+            fullscreenDiv.style.position = "fixed";
+            fullscreenDiv.style.top = "0";
+            fullscreenDiv.style.left = "0";
+            fullscreenDiv.style.width = "100%";
+            fullscreenDiv.style.height = "100%";
+            fullscreenDiv.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+            fullscreenDiv.style.display = "flex";
+            fullscreenDiv.style.alignItems = "center";
+            fullscreenDiv.style.justifyContent = "center";
+            fullscreenDiv.style.zIndex = "9999";
+            fullscreenDiv.onclick = function () {
+                document.body.removeChild(fullscreenDiv);
+            };
+
+            var fullscreenImg = document.createElement("img");
+            fullscreenImg.src = img.src;
+            fullscreenImg.style.maxWidth = "90%";
+            fullscreenImg.style.maxHeight = "90%";
+
+            fullscreenDiv.appendChild(fullscreenImg);
+            document.body.appendChild(fullscreenDiv);
+        }
+
+        // Função para obter a data e hora atual
+        function getCurrentDateTime() {
+            var now = new Date();
+            var date = now.toLocaleDateString("pt-BR");
+            var time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+            return `${date} às ${time}`;
+        }
+
+        // Função para salvar as tarefas no localStorage
+        function saveTasks() {
+            var taskList = document.getElementById("taskList").innerHTML;
+            localStorage.setItem("tasks", taskList);
+        }
+
+        // Função para carregar as tarefas do localStorage
+        function loadTasks() {
+            var savedTasks = localStorage.getItem("tasks");
+            if (savedTasks) {
+                document.getElementById("taskList").innerHTML = savedTasks;
+                attachTaskListeners();
+            }
+        }
+
+        // Função para carregar as tarefas e adicionar os ouvintes
+        function attachTaskListeners() {
+            var checkboxes = document.querySelectorAll('.task input[type="checkbox"]');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    completeTask(checkbox);
+                });
+            });
+        }
+
+        // Adiciona ouvinte para o campo de input para capturar a tecla Enter
+        document.getElementById("taskInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                addTask(); // Adicionar a tarefa ao pressionar Enter
+            }
+        });
+
+        // Carregar as tarefas ao iniciar a página
+        window.onload = function () {
+            loadTasks();
+        };
+    </script>
+</body>
+</html>
