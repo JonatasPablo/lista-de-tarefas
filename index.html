@@ -28,17 +28,21 @@
             max-width: 85%;
             margin: 0 auto;
             padding: 10px;
-            background-color: rgba(150, 150, 150, 0.5); /* #969696 com 50% de opacidade */
-            border-radius: 20px;
-            box-shadow: 0 0 0px rgba(150, 150, 150, 0.5);
+            background-color: rgba(150, 150, 150, 0.4); /* #969696 com 50% de opacidade */
+            border-radius: 60px;
+            box-shadow: 0 0 0px rgba(150, 150, 150, 0.9);
         }
 
         h1 {
-            color: #ffffff;
+            color: #404040;
             text-align: center;
-            font-size: 3vw;
+            font-size: 7vw;
             margin-bottom: 0;
-            font-style: oblique;
+        }
+
+        #descricao{
+            color: #404040;
+            font-size: 1.5vw;            
         }
 
         ul {
@@ -59,19 +63,18 @@
         li.completed {
             text-decoration: line-through;
             font-style: italic;
-            background-color: #969696;
         }
 
         li[data-priority="alta"] {
-            background-color: rgba(255, 0, 0, 0.7); /* Vermelho */
+            background-color: rgb(0, 0, 0, 1);
         }
 
         li[data-priority="media"] {
-            background-color: rgba(255, 165, 0, 0.7); /* Laranja */
+            background-color: rgb(0, 0, 0, 0.5);
         }
 
         li[data-priority="baixa"] {
-            background-color: rgba(0, 128, 0, 0.7); /* Verde */
+            background-color: rgb(0, 0, 0, 0.2);
         }
 
         label {
@@ -82,11 +85,32 @@
         }
 
         #taskInput {
-            font-style: italic;
+            font-style: ;
             font-size: 80%;
             width: 100%;
             padding: 1vw;
             margin-top: 1vw;
+            border-radius: 10px;
+            border: none;
+        }
+
+        .task label {
+            word-wrap: break-word; /* Quebra a linha se o texto for longo */
+            word-break: break-all; /* Quebra a linha em qualquer ponto se necessário */
+            white-space: normal;   /* Permite que o texto quebre em várias linhas */
+        }
+
+        #prioritySelect{
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 10px;
+            width:140px;
+        }
+
+        .editPriority{
+            border: none;
+            border-radius: 10px;
+            width: 10%;
         }
 
         select {
@@ -94,11 +118,9 @@
             font-size: 80%;
             padding: 0.5vw;
             width: 100%;
-            font-style: italic;
         }
 
         button {
-            font-style: italic;
             padding: 0.3vw;
             margin-top: 0.2vw;
             border-radius: 10px;
@@ -108,7 +130,8 @@
         }
 
         button:hover {
-            background-color: #f0f0f0;
+            background-color: #404040;
+            color: #ffffff;
         }
 
         .editTaskBtn {
@@ -148,26 +171,23 @@
             gap: 5px;
         }
 
-        .task img {
+        /* .task img {
             max-width: 50px;
             cursor: pointer;
             display: inline-block;
-        }
+        } */
 
         @media only screen and (max-width: 600px) {
             h1 {
                 font-size: 6vw;
             }
-
             button {
                 padding: 1vw;
             }
-
             .editTaskBtn {
                 font-size: 2.5vw; /* Botão Editar ajustado para dispositivos menores */
             }
         }
-
     </style>
 </head>
 <body>
@@ -177,15 +197,15 @@
         <input type="file" id="imageInput" multiple accept="image/*">
 
         <div>
-            <label for="taskInput">Descrição da Tarefa:</label>
+            <label id="descricao" for="taskInput">Descrição da Tarefa:</label>
             <input type="text" id="taskInput" placeholder="Adicionar tarefa">
-            <select id="prioritySelect">
+            <select id="prioritySelect">Prioridade:
                 <option value="alta">Alta Prioridade</option>
                 <option value="media">Média Prioridade</option>
                 <option value="baixa">Baixa Prioridade</option>
             </select>
             <button id="addTaskBtn" onclick="addTask()">Adicionar</button>
-            <button id="attachFileBtn" class="custom-file-upload" onclick="document.getElementById('imageInput').click()">Anexar imagem</button>
+            <!-- <button id="attachFileBtn" class="custom-file-upload" onclick="document.getElementById('imageInput').click()">Anexar imagem</button> -->
             <button class="export-button" onclick="exportTasks()">Exportar Lista</button>
             <button class="deletar" onclick="deleteCompletedTasks()">Deletar Tarefas Completas</button>
         </div>
@@ -205,33 +225,28 @@
                 var taskItem = document.createElement("li");
                 var date = getCurrentDateTime();
                 var priority = prioritySelect.value;
-
                 var taskContent = `
-                    <label><input type="checkbox" onchange="completeTask(this)"> ${taskInput.value} - Criada em: ${date} - Prioridade: ${priority.charAt(0).toUpperCase() + priority.slice(1)}</label>
-                    <button class="editTaskBtn" onclick="editTask(this)">Editar</button>
-                    <button class="saveTaskBtn" style="display: none;" onclick="saveTask(this)">Salvar</button>
+                <label class="task-label"><input type="checkbox" onchange="completeTask(this)"> ${taskInput.value} - Criada em: ${date} - Prioridade: ${priority.charAt(0).toUpperCase() + priority.slice(1)}</label>
+                <button class="editTaskBtn" onclick="editTask(this)">Editar</button>
+                <button class="saveTaskBtn" style="display: none;" onclick="saveTask(this)">Salvar</button>
                 `;
-
-                // Adiciona miniaturas das imagens selecionadas
-                var imageInput = document.getElementById("imageInput");
-                if (imageInput.files.length > 0) {
-                    taskContent += '<div class="image-container">';
-                    for (var i = 0; i < imageInput.files.length; i++) {
-                        var imageURL = URL.createObjectURL(imageInput.files[i]);
-                        taskContent += `<img src="${imageURL}" alt="Anexo ${i + 1}" onclick="openFullscreen(this)">`;
-                    }
-                    taskContent += '</div>';
-                }
-
+        // Adiciona miniaturas das imagens selecionadas
+        // var imageInput = document.getElementById("imageInput");
+        // if (imageInput.files.length > 0) {
+        //     taskContent += '<div class="image-container">';
+        //     for (var i = 0; i < imageInput.files.length; i++) {
+        //         var imageURL = URL.createObjectURL(imageInput.files[i]);
+        //         taskContent += `<img src="${imageURL}" alt="Anexo ${i + 1}" onclick="openFullscreen(this)">`;
+        //     }
+        //     taskContent += '</div>';
+        // }
                 taskItem.innerHTML = taskContent;
                 taskItem.classList.add("task");
                 taskItem.setAttribute("data-priority", priority);
-
                 taskList.appendChild(taskItem);
                 sortTasks();
                 taskInput.value = "";
-                imageInput.value = "";
-
+        // imageInput.value = "";
                 saveTasks();
                 attachTaskListeners();
             }
@@ -242,41 +257,51 @@
             var taskItem = button.closest("li");
             var label = taskItem.querySelector("label");
             var taskText = label.textContent.split(" - ")[0].trim(); // Pega o texto da tarefa
-
-            // Adiciona o campo de texto com evento onkeypress
-            label.innerHTML = `<input type="text" value="${taskText}" class="editInput" style="width: 100%;" onkeypress="handleEditInputKeyPress(event, this)">`; 
+            var currentPriority = taskItem.getAttribute("data-priority"); // Pega a prioridade atual
+        // Adiciona o campo de texto para editar o nome da tarefa
+            label.innerHTML = `
+                <input type="text" value="${taskText}" class="editInput" style="width: 100%;" onkeypress="handleEditInputKeyPress(event, this)">
+                <select class="editPriority">
+                <option value="alta" ${currentPriority === 'alta' ? 'selected' : ''}>Alta</option>
+                <option value="media" ${currentPriority === 'media' ? 'selected' : ''}>Média</option>
+                <option value="baixa" ${currentPriority === 'baixa' ? 'selected' : ''}>Baixa</option>
+                </select>
+            `;
             button.style.display = "none"; // Oculta o botão de editar
             var saveButton = taskItem.querySelector(".saveTaskBtn");
             saveButton.style.display = "inline-block"; // Mostra o botão de salvar
-                }
+            attachTaskListeners();
+        }
 
-        // Salva a tarefa ao pressionar a tecla "Enter" durante a edição
+        // Salva a edição com o botão Enter
         function handleEditInputKeyPress(event, inputElement) {
             if (event.key === "Enter") {
+                event.preventDefault(); // Impede a ação padrão do Enter
                 var saveButton = inputElement.closest("li").querySelector(".saveTaskBtn");
-                saveTask(saveButton);
+                if (saveButton) {
+                    saveTask(saveButton); // Chama a função para salvar a tarefa
+                }
             }
         }
 
-       // Função para salvar a edição da tarefa
+        // Função para salvar a edição da tarefa
         function saveTask(button) {
             var taskItem = button.closest("li");
             var input = taskItem.querySelector(".editInput");
             var taskText = input.value.trim();
+            var prioritySelect = taskItem.querySelector(".editPriority");
+            var priority = prioritySelect.value;
             var date = getCurrentDateTime(); // Atualiza a data da tarefa
-
             var label = taskItem.querySelector("label");
-            label.innerHTML = `<input type="checkbox" onchange="completeTask(this)"> ${taskText} - Editada em: ${date}`;
-            
-            button.style.display = "none"; // Oculta botão de salvar
+            label.innerHTML = `<input type="checkbox" onchange="completeTask(this)"> ${taskText} - Editada em: ${date} - Prioridade: ${priority.charAt(0).toUpperCase() + priority.slice(1)}`;
+            taskItem.setAttribute("data-priority", priority); // Atualiza a prioridade da tarefa
+            button.style.display = "none"; // Oculta o botão de salvar
             var editButton = taskItem.querySelector(".editTaskBtn");
-            editButton.style.display = "inline-block"; // Mostra botão de editar
-            attachTaskListeners();
-            sortTasks();
+            editButton.style.display = "inline-block"; // Mostra o botão de editar
+            sortTasks(); // Reordena as tarefas após salvar
             saveTasks(); // Salvar tarefas após editar
+            attachTaskListeners();
         }
-
-
 
         // Função para marcar como completa
         function completeTask(checkbox) {
@@ -301,7 +326,6 @@
         function deleteCompletedTasks() {
             var taskList = document.getElementById("taskList");
             var completedTasks = taskList.getElementsByClassName("completed");
-
             while (completedTasks.length > 0) {
                 completedTasks[0].remove();
             }
@@ -312,14 +336,12 @@
         function sortTasks() {
             var taskList = document.getElementById("taskList");
             var tasks = Array.from(taskList.getElementsByTagName("li"));
-
             tasks.sort(function(a, b) {
                 var priorityOrder = { "alta": 1, "media": 2, "baixa": 3 };
                 var priorityA = a.getAttribute("data-priority");
                 var priorityB = b.getAttribute("data-priority");
                 return priorityOrder[priorityA] - priorityOrder[priorityB];
             });
-
             tasks.forEach(function(task) {
                 taskList.appendChild(task);
             });
@@ -335,13 +357,11 @@
         function exportTasks() {
             var taskList = document.getElementById("taskList");
             var tasks = taskList.getElementsByTagName("li");
-
             var taskArray = [];
             for (var i = 0; i < tasks.length; i++) {
                 var label = tasks[i].querySelector("label").innerText;
                 taskArray.push(label);
             }
-
             var taskBlob = new Blob([taskArray.join("\n")], { type: "text/plain;charset=utf-8" });
             saveAs(taskBlob, "lista_de_tarefas.txt");
         }
@@ -350,75 +370,64 @@
         function saveTasks() {
             var tasks = [];
             var taskItems = document.querySelectorAll("#taskList li");
-
             taskItems.forEach(function(item) {
                 var label = item.querySelector("label");
                 var taskText = label.textContent.split(" - ")[0].trim();
                 var date = label.textContent.split(" - ")[1].trim();
                 var priority = item.getAttribute("data-priority");
                 var completed = item.classList.contains("completed");
-
-                var images = [];
-                var imageElements = item.querySelectorAll("img");
-                imageElements.forEach(function(img) {
-                    images.push(img.src);
-                });
-
-                tasks.push({ text: taskText, date: date, priority: priority, completed: completed, images: images });
+            // var images = [];
+            // var imageElements = item.querySelectorAll("img");
+            // imageElements.forEach(function(img) {
+            //     images.push(img.src);
+            // });
+                tasks.push({ text: taskText, date: date, priority: priority, completed: completed, /*images: images*/ });
             });
-
-            localStorage.setItem("tasks", JSON.stringify(tasks));
+            localStorage.setItem("tasks", JSON.stringify(tasks));            
         }
 
         // Função para carregar as tarefas do localStorage
         function loadTasks() {
             var tasks = JSON.parse(localStorage.getItem("tasks")) || [];
             var taskList = document.getElementById("taskList");
-
             tasks.forEach(function(task) {
                 var taskItem = document.createElement("li");
                 var priority = task.priority;
-
                 var taskContent = `
                     <label><input type="checkbox" onchange="completeTask(this)" ${task.completed ? "checked" : ""}> ${task.text} - ${task.date} - Prioridade: ${priority.charAt(0).toUpperCase() + priority.slice(1)}</label>
                     <button class="editTaskBtn" onclick="editTask(this)">Editar</button>
                     <button class="saveTaskBtn" style="display: none;" onclick="saveTask(this)">Salvar</button>
                 `;
-
-                if (task.images.length > 0) {
-                    taskContent += '<div class="image-container">';
-                    task.images.forEach(function(imageURL, index) {
-                        taskContent += `<img src="${imageURL}" alt="Anexo ${index + 1}" onclick="openFullscreen(this)">`;
-                    });
-                    taskContent += '</div>';
-                }
-
+            // if (task.images.length > 0) {
+            //     taskContent += '<div class="image-container">';
+            //     task.images.forEach(function(imageURL, index) {
+            //         taskContent += `<img src="${imageURL}" alt="Anexo ${index + 1}" onclick="openFullscreen(this)">`;
+            //     });
+            //     taskContent += '</div>';
+            // }
                 taskItem.innerHTML = taskContent;
                 taskItem.classList.add("task");
                 taskItem.setAttribute("data-priority", priority);
-
                 if (task.completed) {
                     taskItem.classList.add("completed");
                 }
-
                 taskList.appendChild(taskItem);
             });
-
             sortTasks();
         }
 
         // Função para abrir uma imagem em tela cheia
-        function openFullscreen(image) {
-            if (image.requestFullscreen) {
-                image.requestFullscreen();
-            } else if (image.mozRequestFullScreen) { /* Firefox */
-                image.mozRequestFullScreen();
-            } else if (image.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-                image.webkitRequestFullscreen();
-            } else if (image.msRequestFullscreen) { /* IE/Edge */
-                image.msRequestFullscreen();
-            }
-        }
+        // function openFullscreen(image) {
+        //     if (image.requestFullscreen) {
+        //         image.requestFullscreen();
+        //     } else if (image.mozRequestFullScreen) { /* Firefox */
+        //         image.mozRequestFullScreen();
+        //     } else if (image.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        //         image.webkitRequestFullscreen();
+        //     } else if (image.msRequestFullscreen) { /* IE/Edge */
+        //         image.msRequestFullscreen();
+        //     }
+        // }
 
         // Função para carregar as tarefas e adicionar os ouvintes
         function attachTaskListeners() {
@@ -442,7 +451,6 @@
         window.onload = function() {
             loadTasks();
         };
-
     </script>
 </body>
 </html>
